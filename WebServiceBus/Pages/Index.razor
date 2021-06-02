@@ -1,0 +1,40 @@
+﻿@page "/"
+@using ServiceBusShared.Models
+@using WebServiceBus.Services
+@using Microsoft.Extensions.Configuration
+@inject IQueueServiceBus queueBus
+@inject IConfiguration config
+
+<h1>Employee Register</h1>
+
+<p>Publish Employees Recorder into Azure Service Bus</p>
+
+<div class="row">
+
+    <EditForm Model="emp" OnSubmit="PublishMessage" class="col-8">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="employeeid">EmployeeID</label>
+            <InputNumber id="employeeid" @bind-Value="emp.EmployeeId" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="firstname">First Name</label>
+            <InputText id="firstname" @bind-Value="emp.Firstname" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <InputText id="lastname" @bind-Value="emp.Lastname" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+    </EditForm>
+</div>
+
+@code{
+    private Employee emp = new Employee();
+    private async Task PublishMessage()
+    {
+        await queueBus.SendMessageAsync(emp, config["QueuesBus:employees"]);
+        emp = new Employee();
+    }
+}
